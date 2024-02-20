@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string"
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "xaxis": {
+          "type": "object",
+          "properties": {
+            "dtick": { "type": "string" }
+          }
+        },
+        "yaxis": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" }
+          }
+        }
+      }
+    },
+    "plots": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "visible": { "type": "boolean" },
+              "mode": {
+                "type": "string",
+                "enum": [
+                    "lines",
+                    "markers",
+                    "text",
+                    "lines+markers",
+                    "lines+text",
+                    "markers+text",
+                    "lines+markers+text"
+                ]
+              }
+            },
+            "required": ["name"]
+          },
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "plot": { "const": "time_scatter" },
+                  "table": { "type": "string" },
+                  "column": { "type": "string" },
+                  "filter": {
+                    "type": "object",
+                    "properties": {
+                      "where": { "type": "string" },
+                      "workhours": { "type": "boolean" }
+                    }
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": ["m", "s", "ms", "us", "ns"]
+                  },
+                  "aggregation": {
+                    "type": "object",
+                    "properties": {
+                      "mode": { "type": "string" },
+                      "size": { "type": "string" }
+                    },
+                    "required": ["mode", "size"]
+                  },
+                  "line": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" }
+                  }
+                },
+                "required": [
+                  "plot",
+                  "table",
+                  "column"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "required": ["source", "plots"]
+}

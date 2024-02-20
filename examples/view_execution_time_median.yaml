@@ -1,0 +1,24 @@
+# This configuration generates a scatter plot of the median wallclock time of
+# view execution for a specific view, during work hours, for the year 2023 and
+# beyond. The median is calculated using a 1-hour aggregation window.
+source: ./trace.sqlite
+layout:
+  width: 1024
+  height: 768
+  xaxis:
+    type: date
+  yaxis:
+    title: Wallclock time
+plots:
+  - plot: time_scatter
+    name: Wallclock time
+    table: item_view_executor_execute
+    column: wallclock_time_ns
+    filter:
+      start: "2023"
+      workhours: true
+      where: "view_id = 1899"
+    aggregation:
+      mode: median
+      size: 1h
+    mode: markers

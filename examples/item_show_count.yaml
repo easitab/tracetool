@@ -1,0 +1,23 @@
+# This configuration draws a smoothed line plot of the number of opened items per hour.
+source: ./trace.sqlite
+layout:
+  width: 1856
+  height: 1016
+  xaxis:
+    type: date
+  yaxis:
+    title: Opened items per hour
+plots:
+  - plot: count_scatter
+    name: Wallclock time
+    table: form_widget_startup
+    column: wallclock_time_ns
+    filter:
+      start: "2023-03-20"
+      end: "2023-03-27"
+    aggregation:
+      mode: count
+      size: 1h
+    mode: "lines+markers"
+    line:
+      shape: "spline"
