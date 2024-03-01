@@ -1,5 +1,89 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "axisConfiguration": {
+      "type": "object",
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "default": true,
+          "description": "A single toggle to hide the axis while preserving interaction like dragging. Default is true when a cheater plot is present on the axis, otherwise false."
+        },
+        "title": {
+          "type": "string",
+          "default": "Title",
+          "description": "Title of the axis."
+        },
+        "type": {
+          "type": "string",
+          "default": "-",
+          "description": "Sets the axis type. By default, plotly attempts to determined the axis type by looking into the data of the traces that referenced the axis in question.",
+          "enum": [
+            "-",
+            "linear",
+            "log",
+            "date",
+            "category",
+            "multicategory"
+          ]
+        },
+        "autorange": {
+          "type": "boolean",
+          "default": true,
+          "description": "Determines whether or not the range of this axis is computed in relation to the input data. NB: Plotly supports other options that we don't support here - we only permit true or false."
+        },
+        "rangemode": {
+          "type": "string",
+          "default": "normal",
+          "description": "If \"normal\", the range is computed in relation to the extrema of the input data. If \"tozero\", the range extends to 0, regardless of the input data If \"nonnegative\", the range is non-negative, regardless of the input data. Applies only to linear axes.",
+          "enum": [
+            "normal",
+            "tozero",
+            "nonnegative"
+          ]
+        },
+        "tick0": {
+          "type": "number",
+          "default": 0,
+          "description": "Sets the placement of the first tick on this axis. Use with dtick. If the axis type is \"log\", then you must take the log of your starting tick (e.g. to set the starting tick to 100, set the tick0 to 2) except when dtick=\"L\" (see dtick for more info). NB: Only numbers are supported. If the axis type is \"date\", there is no proper way to set this. If the axis type is \"category\", it should be a number, using the scale where each category is assigned a serial number from zero in the order it appears."
+        },
+        "dtick": {
+          "type": "number",
+          "default": 1,
+          "description": "Sets the step in-between ticks on this axis. Use with tick0. Must be a positive number. If the axis type is \"log\", then ticks are set every 10^(n\"dtick) where n is the tick number. For example, to set a tick mark at 1, 10, 100, 1000, ... set dtick to 1. To set tick marks at 1, 100, 10000, ... set dtick to 2. To set tick marks at 1, 5, 25, 125, 625, 3125, ... set dtick to log_10(5), or 0.69897000433. If the axis type is \"date\", then you must convert the time to milliseconds. For example, to set the interval between ticks to one day, set dtick to 86400000.0."
+        },
+        "showgrid": {
+          "type": "boolean",
+          "default": true,
+          "description": "Determines whether or not grid lines are drawn. If \"true\", the grid lines are drawn at every tick mark."
+        },
+        "side": {
+          "type": "string",
+          "default": "bottom",
+          "description": "Determines whether a x (y) axis is positioned at the \"bottom\" (\"left\") or \"top\" (\"right\") of the plotting area.",
+          "enum": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ]
+        },
+        "overlaying": {
+          "type": "string",
+          "description": "If set a same-letter axis id, this axis is overlaid on top of the corresponding same-letter axis, with traces and axes visible for both axes. If \"false\", this axis does not overlay any same-letter axes. In this case, for axes with overlapping domains only the highest-numbered axis will be visible.",
+          "anyOf": [
+            { "type": "string", "const": "free" },
+            { "type": "string", "pattern": "^x([2-9]|[1-9][0-9]+)?( domain)?$" },
+            { "type": "string", "pattern": "^y([2-9]|[1-9][0-9]+)?( domain)?$" }
+          ]
+        }
+      }
+    },
+    "datetime": {
+      "type": "string",
+      "pattern": "^\\d{4}(?:-\\d{2}(?:-\\d{2}(?:\\s+\\d{2}(?::\\d{2}(?::\\d{2})?)?)?)?)?$"
+    }
+  },
   "type": "object",
   "properties": {
     "source": {
@@ -8,19 +92,130 @@
     "layout": {
       "type": "object",
       "properties": {
-        "width": { "type": "integer" },
-        "height": { "type": "integer" },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string",
+              "default": "Title"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "text": { "type": "string" }
+              }
+            }
+          ]
+        },
+        "showlegend": {
+          "type": "boolean",
+          "default": true,
+          "description": "Determines whether or not a legend is drawn. Default is true if there is a trace to show and any of these: a) Two or more traces would by default be shown in the legend. b) One pie trace is shown in the legend. c) One trace is explicitly given with showlegend: true."
+        },
+        "width": {
+          "type": "integer",
+          "default": 700,
+          "description": "Sets the plot's width (in px)."
+        },
+        "height": {
+          "type": "integer",
+          "default": 450,
+          "description": "Sets the plot's height (in px)."
+        },
         "xaxis": {
-          "type": "object",
-          "properties": {
-            "dtick": { "type": "string" }
-          }
+          "description": "Configuration for the x-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
         },
         "yaxis": {
-          "type": "object",
-          "properties": {
-            "title": { "type": "string" }
-          }
+          "description": "Configuration for the y-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "zaxis": {
+          "description": "Configuration for the z-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "xaxis2": {
+          "description": "Configuration for the second x-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "yaxis2": {
+          "description": "Configuration for the second y-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "zaxis2": {
+          "description": "Configuration for the second z-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "xaxis3": {
+          "description": "Configuration for the third x-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "yaxis3": {
+          "description": "Configuration for the third y-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "zaxis3": {
+          "description": "Configuration for the third z-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "xaxis4": {
+          "description": "Configuration for the fourth x-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "yaxis4": {
+          "description": "Configuration for the fourth y-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "zaxis4": {
+          "description": "Configuration for the fourth z-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "xaxis5": {
+          "description": "Configuration for the fifth x-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "yaxis5": {
+          "description": "Configuration for the fifth y-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "zaxis5": {
+          "description": "Configuration for the fifth z-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "xaxis6": {
+          "description": "Configuration for the sixth x-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "yaxis6": {
+          "description": "Configuration for the sixth y-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "zaxis6": {
+          "description": "Configuration for the sixth z-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "xaxis7": {
+          "description": "Configuration for the seventh x-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "yaxis7": {
+          "description": "Configuration for the seventh y-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "zaxis7": {
+          "description": "Configuration for the seventh z-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "xaxis8": {
+          "description": "Configuration for the eighth x-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "yaxis8": {
+          "description": "Configuration for the eighth y-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
+        },
+        "zaxis8": {
+          "description": "Configuration for the eighth z-axis of the plot.",
+          "$ref": "#/definitions/axisConfiguration"
         }
       }
     },
@@ -31,8 +226,57 @@
           {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "visible": { "type": "boolean" },
+              "plot": {
+                "type": "string",
+                "description": "The type of plot to create."
+              },
+              "filter": {
+                "type": "object",
+                "description": "Filter to apply to the data.",
+                "properties": {
+                  "start": {
+                    "$ref": "#/definitions/datetime",
+                    "description": "Start time for the filter."
+                  },
+                  "end": {
+                    "$ref": "#/definitions/datetime",
+                    "description": "End time for the filter."
+                  },
+                  "where": {
+                    "type": "string",
+                    "description": "Additional arbitrary SQL WHERE clause, as understood by SQLite."
+                  },
+                  "workhours": {
+                    "type": "boolean",
+                    "description": "Whether to only include samples within work hours. This means that each sample's timestamp will be converted to local time, and if it does not occur between 08:00 and 17:00 on a weekday, it is discarded. This is useful for removing outliers that occur when few people are using the system."
+                  }
+                }
+              },
+              "aggregation": {
+                "type": "object",
+                "description": "Aggregation to apply to the data.",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": ["mean", "min", "q1", "median", "q3", "max", "count"],
+                    "description": "Mode of the aggregation."
+                  },
+                  "size": {
+                    "type": "string",
+                    "description": "Size of the aggregation as a time duration. Duration units larger than day (D) are currently unsupported."
+                  }
+                },
+                "required": ["mode", "size"]
+              },
+              "name": {
+                "type": "string",
+                "description": "Name of the plot."
+              },
+              "visible": {
+                "type": "string",
+                "enum": [ "true", "false", "legendonly" ],
+                "description": "Determines whether or not this trace is visible. If \"legendonly\", the trace is not drawn, but can appear as a legend item (provided that the legend itself is visible)."
+              },
               "mode": {
                 "type": "string",
                 "enum": [
@@ -43,7 +287,95 @@
                     "lines+text",
                     "markers+text",
                     "lines+markers+text"
-                ]
+                ],
+                "description": "Determines the drawing mode for this trace. If the provided mode includes \"text\" then the text elements appear at the coordinates. Otherwise, the text elements appear on hover. If there are less than 20 points and the trace is not stacked then the default is \"lines+markers\". Otherwise, \"lines\"."
+              },
+              "line": {
+                "type": "object",
+                "description": "Configuration for the lines in the plot.",
+                "properties": {
+                  "width": {
+                    "type": "integer",
+                    "default": 2,
+                    "description": "Sets the line width (in px)."
+                  },
+                  "shape": {
+                    "type": "string",
+                    "enum": ["linear", "spline", "hv", "vh", "hvh", "vhv"],
+                    "default": "linear",
+                    "description": "Determines the line shape. With \"spline\" the lines are drawn using spline interpolation. The other available values correspond to step-wise line shapes."
+                  },
+                  "smoothing": {
+                    "type": "number",
+                    "default": 1,
+                    "description": "Has an effect only if shape is set to \"spline\". Sets the amount of smoothing. 0 corresponds to no smoothing (equivalent to a \"linear\" shape)."
+                  },
+                  "dash": {
+                    "type": "string",
+                    "enum": ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"],
+                    "default": "solid",
+                    "description": "Sets the style of the lines."
+                  },
+                  "simplify": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Simplifies lines by removing nearly-collinear points. When transitioning lines, it may be desirable to disable this so that the number of points along the resulting SVG path is unaffected."
+                  },
+                  "color": {
+                    "type": "string",
+                    "description": "Sets the line color."
+                  },
+                  "cauto": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Determines whether or not the color domain is computed with respect to the input data or the bounds set in cmin and cmax. Defaults to false when cmin and cmax are set by the user."
+                  },
+                  "cmin": {
+                    "type": "number",
+                    "description": "Sets the lower bound of the color domain. Value should have the same units as in color."
+                  },
+                  "cmax": {
+                    "type": "number",
+                    "description": "Sets the upper bound of the color domain. Value should have the same units as in color."
+                  },
+                  "cmid": {
+                    "type": "number",
+                    "description": "Sets the mid-point of the color domain by scaling cmin and/or cmax to be equidistant to this point."
+                  },
+                  "colorscale": {
+                    "type": "string",
+                    "description": "Sets the colorscale. Has an effect only if in marker.line.color is set to a numerical array. The colorscale must be an array containing arrays mapping a normalized value to an rgb, rgba, hex, hsl, hsv, or named color string. At minimum, a mapping for the lowest (0) and highest (1) values are required. For example, [[0, 'rgb(0,0,255)'], [1, 'rgb(255,0,0)']]. To control the bounds of the colorscale in color space, use marker.line.cmin and marker.line.cmax. Alternatively, colorscale may be a palette name string of the following list: Blackbody,Bluered,Blues,Cividis,Earth,Electric,Greens,Greys,Hot,Jet,Picnic,Portland,Rainbow,RdBu,Reds,Viridis,YlGnBu,YlOrRd."
+                  },
+                  "autocolorscale": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Determines whether the colorscale is a default palette (autocolorscale: true) or the palette determined by colorscale. Has an effect only if in color is set to a numerical array. In case colorscale is unspecified or autocolorscale is true, the default palette will be chosen according to whether numbers in the color array are all positive, all negative or mixed."
+                  },
+                  "reversescale": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Reverses the color mapping if true. Has an effect only if in marker.line.color is set to a numerical array. If true, cmin will correspond to the last color in the array and cmax will correspond to the first color."
+                  },
+                  "outliercolor": {
+                    "type": "string",
+                    "description": "Sets the border line color of the outlier sample points. Defaults to color."
+                  },
+                  "outlierwidth": {
+                    "type": "number",
+                    "default": 1,
+                    "description": "Sets the border line width (in px) of the outlier sample points."
+                  }
+                }
+              },
+              "xaxis": {
+                "type": "string",
+                "default": "x",
+                "description": "Sets a reference between this trace's x coordinates and a 2D cartesian x axis. If \"x\" (the default value), the x coordinates refer to layout.xaxis. If \"x2\", the x coordinates refer to layout.xaxis2, and so on."
+              },
+              "yaxis": {
+                "type": "string",
+                "default": "y",
+                "description": "Sets a reference between this trace's y coordinates and a 2D cartesian y axis. If \"y\" (the default value), the y coordinates refer to layout.yaxis. If \"y2\", the y coordinates refer to layout.yaxis2, and so on."
               }
             },
             "required": ["name"]
@@ -53,31 +385,23 @@
               {
                 "type": "object",
                 "properties": {
-                  "plot": { "const": "time_scatter" },
-                  "table": { "type": "string" },
-                  "column": { "type": "string" },
-                  "filter": {
-                    "type": "object",
-                    "properties": {
-                      "where": { "type": "string" },
-                      "workhours": { "type": "boolean" }
-                    }
+                  "plot": {
+                    "const": "time_scatter",
+                    "description": "Time scatter plot"
+                  },
+                  "table": {
+                    "type": "string",
+                    "description": "Database table to use for the plot."
+                  },
+                  "column": {
+                    "type": "string",
+                    "description": "Column to use for the y-axis."
                   },
                   "unit": {
                     "type": "string",
-                    "enum": ["m", "s", "ms", "us", "ns"]
-                  },
-                  "aggregation": {
-                    "type": "object",
-                    "properties": {
-                      "mode": { "type": "string" },
-                      "size": { "type": "string" }
-                    },
-                    "required": ["mode", "size"]
-                  },
-                  "line": {
-                    "type": "object",
-                    "additionalProperties": { "type": "string" }
+                    "enum": [ "Y", "M", "W", "D", "h", "m", "s", "ms", "us", "ns" ],
+                    "default": "ns",
+                    "description": "Unit of the y-axis."
                   }
                 },
                 "required": [
@@ -85,6 +409,43 @@
                   "table",
                   "column"
                 ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "plot": {
+                    "const": "count_scatter",
+                    "description": "Count scatter plot"
+                  },
+                  "table": {
+                    "type": "string",
+                    "description": "Database table to use for the plot."
+                  },
+                  "column": {
+                    "type": "string",
+                    "description": "Column to use for the y-axis."
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "plot": {
+                    "const": "overlap"
+                  },
+                  "view_id": {
+                    "type": "integer",
+                    "description": "ID of the view to use for the plot."
+                  },
+                  "x_bins": {
+                    "type": "integer",
+                    "description": "Number of bins for the x-axis."
+                  },
+                  "y_bins": {
+                    "type": "integer",
+                    "description": "Number of bins for the y-axis."
+                  }
+                }
               }
             ]
           }
